@@ -1,6 +1,10 @@
-.build/
-.vscode/
+/.build/
+/.vscode/
 *.log
 secrets.yaml
 secrets.yml
 .env
+src/esphome/secrets.yaml
+src/esphome/.esphome/
+src/esphome/.storage/
+build/
