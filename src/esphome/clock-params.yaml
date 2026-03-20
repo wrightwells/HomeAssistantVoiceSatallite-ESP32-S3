@@ -1,0 +1,10 @@
+substitutions:
+  # Clock hand thickness in pixels.
+  clock_hour_hand_width: "10"
+  clock_minute_hand_width: "8"
+  clock_second_hand_width: "4"
+
+  # Clock hand length in pixels, measured from the center point.
+  clock_hour_hand_length: "44.0f"
+  clock_minute_hand_length: "66.0f"
+  clock_second_hand_length: "78.0f"

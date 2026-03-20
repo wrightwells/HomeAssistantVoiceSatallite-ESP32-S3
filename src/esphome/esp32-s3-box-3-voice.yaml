@@ -1,3 +1,6 @@
+packages:
+  clock_params: !include clock-params.yaml
+
 substitutions:
   name: esp32-s3-box-3-voice
   friendly_name: ESP32-S3-BOX-3 Voice
@@ -63,6 +66,10 @@ wifi:
   fast_connect: true
 
 # No fallback AP and no captive portal by design.
+
+time:
+  - platform: homeassistant
+    id: ha_time
 
 # BOX-3-specific pin assumptions. Verify these if your exact board revision
 # fails to initialize the display or audio codecs.
@@ -175,14 +182,17 @@ button:
 
 # Expected asset:
 # - Put a transparent PNG at assets/voice_pulse.png relative to this YAML.
-# - A centered transparent source image is more efficient than a full-screen PNG.
-# - Recommended source size: roughly 160x160 to 220x220.
+# - This project now uses the same centered PNG for two jobs:
+#   1) idle clock face background
+#   2) listening/responding pulse visual
+# - A centered source image is more efficient than a full-screen PNG.
+# - Recommended source size: 200x200.
 image:
   - file: "assets/voice_pulse.png"
     id: voice_pulse_image
     type: RGB565
     transparency: alpha_channel
-    resize: 192x192
+    resize: 200x200
 
 display:
   - platform: ili9xxx
@@ -225,6 +235,14 @@ globals:
     type: int
     restore_value: no
     initial_value: '1'
+  - id: clock_center_x
+    type: int
+    restore_value: no
+    initial_value: '100'
+  - id: clock_center_y
+    type: int
+    restore_value: no
+    initial_value: '100'
 
 lvgl:
   widgets:
@@ -242,14 +260,113 @@ lvgl:
         scrollbar_mode: "OFF"
         widgets:
           - image:
+              id: clock_face_image
+              align: CENTER
+              src: voice_pulse_image
+              hidden: false
+              antialias: false
+              mode: VIRTUAL
+          - line:
+              id: hour_hand
+              hidden: false
+              line_width: ${clock_hour_hand_width}
+              line_color: 0xFFFFFF
+              line_rounded: true
+              points:
+                - 100, 100
+                - 100, 60
+          - line:
+              id: minute_hand
+              hidden: false
+              line_width: ${clock_minute_hand_width}
+              line_color: 0xFFFFFF
+              line_rounded: true
+              points:
+                - 100, 100
+                - 100, 40
+          - line:
+              id: second_hand
+              hidden: false
+              line_width: ${clock_second_hand_width}
+              line_color: 0xFFFFFF
+              line_rounded: true
+              points:
+                - 100, 100
+                - 100, 28
+          - obj:
+              id: clock_center_cap
+              hidden: false
+              align: CENTER
+              width: 18
+              height: 18
+              radius: 9
+              pad_all: 0
+              border_width: 2
+              border_color: 0x000000
+              bg_color: 0xF8F8F8
+              bg_opa: COVER
+              scrollbar_mode: "OFF"
+          - image:
               id: pulse_image
               align: CENTER
               src: voice_pulse_image
+              hidden: true
               zoom: 256
               antialias: false
               mode: VIRTUAL
 
 script:
+  - id: update_clock_hands
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: "return id(ha_time).now().is_valid();"
+          then:
+            - lvgl.line.update:
+                id: hour_hand
+                points:
+                  - x: !lambda "return id(clock_center_x);"
+                    y: !lambda "return id(clock_center_y);"
+                  - x: !lambda |-
+                      auto now = id(ha_time).now();
+                      const float hours = (now.hour % 12) + (now.minute / 60.0f);
+                      const float angle = ((hours * 30.0f) - 90.0f) * 0.01745329252f;
+                      return id(clock_center_x) + int(cosf(angle) * ${clock_hour_hand_length});
+                    y: !lambda |-
+                      auto now = id(ha_time).now();
+                      const float hours = (now.hour % 12) + (now.minute / 60.0f);
+                      const float angle = ((hours * 30.0f) - 90.0f) * 0.01745329252f;
+                      return id(clock_center_y) + int(sinf(angle) * ${clock_hour_hand_length});
+            - lvgl.line.update:
+                id: minute_hand
+                points:
+                  - x: !lambda "return id(clock_center_x);"
+                    y: !lambda "return id(clock_center_y);"
+                  - x: !lambda |-
+                      auto now = id(ha_time).now();
+                      const float minutes = now.minute + (now.second / 60.0f);
+                      const float angle = ((minutes * 6.0f) - 90.0f) * 0.01745329252f;
+                      return id(clock_center_x) + int(cosf(angle) * ${clock_minute_hand_length});
+                    y: !lambda |-
+                      auto now = id(ha_time).now();
+                      const float minutes = now.minute + (now.second / 60.0f);
+                      const float angle = ((minutes * 6.0f) - 90.0f) * 0.01745329252f;
+                      return id(clock_center_y) + int(sinf(angle) * ${clock_minute_hand_length});
+            - lvgl.line.update:
+                id: second_hand
+                points:
+                  - x: !lambda "return id(clock_center_x);"
+                    y: !lambda "return id(clock_center_y);"
+                  - x: !lambda |-
+                      auto now = id(ha_time).now();
+                      const float angle = ((now.second * 6.0f) - 90.0f) * 0.01745329252f;
+                      return id(clock_center_x) + int(cosf(angle) * ${clock_second_hand_length});
+                    y: !lambda |-
+                      auto now = id(ha_time).now();
+                      const float angle = ((now.second * 6.0f) - 90.0f) * 0.01745329252f;
+                      return id(clock_center_y) + int(sinf(angle) * ${clock_second_hand_length});
+
   - id: ui_idle
     mode: restart
     then:
@@ -257,10 +374,9 @@ script:
           id(ui_phase) = 0;
           id(pulse_zoom_native) = 256;
           id(pulse_direction) = 1;
-      - lvgl.image.update:
-          id: pulse_image
-          zoom: 256
-          image_recolor_opa: 0%
+      - lvgl.widget.show: [clock_face_image, hour_hand, minute_hand, second_hand, clock_center_cap]
+      - lvgl.widget.hide: pulse_image
+      - script.execute: update_clock_hands
 
   - id: ui_listening
     mode: restart
@@ -269,6 +385,8 @@ script:
           id(ui_phase) = 1;
           id(pulse_zoom_native) = 256;
           id(pulse_direction) = 1;
+      - lvgl.widget.hide: [clock_face_image, hour_hand, minute_hand, second_hand, clock_center_cap]
+      - lvgl.widget.show: pulse_image
       - lvgl.image.update:
           id: pulse_image
           image_recolor: 0x41C7F4
@@ -281,6 +399,8 @@ script:
           id(ui_phase) = 2;
           id(pulse_zoom_native) = 256;
           id(pulse_direction) = 1;
+      - lvgl.widget.hide: [clock_face_image, hour_hand, minute_hand, second_hand, clock_center_cap]
+      - lvgl.widget.show: pulse_image
       - lvgl.image.update:
           id: pulse_image
           image_recolor: 0xF4B942
@@ -293,6 +413,8 @@ script:
           id(ui_phase) = 3;
           id(pulse_zoom_native) = 256;
           id(pulse_direction) = 1;
+      - lvgl.widget.hide: [clock_face_image, hour_hand, minute_hand, second_hand, clock_center_cap]
+      - lvgl.widget.show: pulse_image
       - lvgl.image.update:
           id: pulse_image
           image_recolor: 0xD64545
@@ -342,6 +464,14 @@ interval:
                   - lvgl.image.update:
                       id: pulse_image
                       zoom: 256
+
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            lambda: "return id(ui_phase) == 0;"
+          then:
+            - script.execute: update_clock_hands
 
 # Preferred mode: on-device wake word. This is realistic on the BOX-3 if
 # your ESPHome build and PSRAM configuration remain stable.
