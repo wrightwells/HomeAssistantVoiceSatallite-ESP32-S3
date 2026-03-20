@@ -1,0 +1,6 @@
+.build/
+.vscode/
+*.log
+secrets.yaml
+secrets.yml
+.env
