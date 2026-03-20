@@ -180,6 +180,21 @@ button:
     name: "${friendly_name} Restart"
     entity_category: config
 
+binary_sensor:
+  # Home Assistant-controlled idle clock tint.
+  # Create input_boolean.voice_clock_green in Home Assistant to toggle this
+  # without recompiling the ESPHome firmware.
+  - platform: homeassistant
+    id: clock_green_mode
+    entity_id: input_boolean.voice_clock_green
+    on_state:
+      then:
+        - if:
+            condition:
+              lambda: "return id(ui_phase) == 0;"
+            then:
+              - script.execute: ui_idle
+
 # Expected asset:
 # - Put a transparent PNG at assets/voice_pulse.png relative to this YAML.
 # - This project now uses the same centered PNG for two jobs:
@@ -376,6 +391,19 @@ script:
           id(pulse_direction) = 1;
       - lvgl.widget.show: [clock_face_image, hour_hand, minute_hand, second_hand, clock_center_cap]
       - lvgl.widget.hide: pulse_image
+      - if:
+          condition:
+            binary_sensor.is_on: clock_green_mode
+          then:
+            - lvgl.image.update:
+                id: clock_face_image
+                image_recolor: 0x00FF00
+                image_recolor_opa: 35%
+          else:
+            - lvgl.image.update:
+                id: clock_face_image
+                image_recolor: 0xFFFFFF
+                image_recolor_opa: 0%
       - script.execute: update_clock_hands
 
   - id: ui_listening

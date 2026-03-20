@@ -69,6 +69,7 @@ Current expected asset format:
 How it is used:
 
 - idle state: the image is used as the clock background
+- idle green mode: Home Assistant can optionally tint the idle clock face green
 - listening state: the same image is shown in the center with pulse animation and no tint
 - responding state: the same image is shown in the center with pulse animation and a blue tint
 - error state: the same image is shown in the center with pulse animation and a white tint
@@ -80,6 +81,66 @@ Related files:
 
 If you replace `src/esphome/assets/voice_pulse.png`, both the firmware display
 and the desktop preview will use the updated asset.
+
+## Home Assistant Controlled Clock Tint
+
+The firmware can change the idle clock face to a green tint from Home Assistant
+without recompiling after this feature is flashed once.
+
+It reads this Home Assistant entity through the ESPHome native API:
+
+- `input_boolean.voice_clock_green`
+
+Behavior:
+
+- `off`: normal idle clock image
+- `on`: idle clock image gets a green tint
+
+This is implemented in:
+
+- `src/esphome/esp32-s3-box-3-voice.yaml`
+
+Create the helper in Home Assistant if it does not already exist:
+
+1. Go to `Settings`
+2. Go to `Devices & Services`
+3. Go to `Helpers`
+4. Create an `Input boolean`
+5. Name it `voice_clock_green`
+
+You can then toggle it manually or from any Home Assistant automation.
+
+Example automation:
+
+```yaml
+alias: Turn Voice Clock Green When Condition Is Met
+description: Example automation for toggling the idle clock tint
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.some_value
+    above: 50
+action:
+  - service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.voice_clock_green
+mode: single
+```
+
+Example reset automation:
+
+```yaml
+alias: Turn Voice Clock Green Off When Condition Clears
+description: Example automation for restoring the normal idle clock tint
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.some_value
+    below: 50
+action:
+  - service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.voice_clock_green
+mode: single
+```
 
 ## Compile The Firmware
 
