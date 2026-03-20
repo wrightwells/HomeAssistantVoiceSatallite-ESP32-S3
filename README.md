@@ -54,6 +54,33 @@ Notes:
 - `src/esphome/secrets.yaml` is ignored by git and should contain your real values
 - `src/esphome/secrets.example.yaml` is the safe template committed to the repo
 
+## Display Asset And Visual States
+
+The firmware uses this image file for the on-screen visual:
+
+- `src/esphome/assets/voice_pulse.png`
+
+Current expected asset format:
+
+- `PNG`
+- `200x200`
+- `RGBA` with transparency supported
+
+How it is used:
+
+- idle state: the image is used as the clock background
+- listening state: the same image is shown in the center with pulse animation and no tint
+- responding state: the same image is shown in the center with pulse animation and a blue tint
+- error state: the same image is shown in the center with pulse animation and a white tint
+
+Related files:
+
+- firmware behavior: `src/esphome/esp32-s3-box-3-voice.yaml`
+- desktop preview: `preview/index.html`
+
+If you replace `src/esphome/assets/voice_pulse.png`, both the firmware display
+and the desktop preview will use the updated asset.
+
 ## Compile The Firmware
 
 From the repository root:
