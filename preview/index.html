@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP32-S3-BOX-3 Voice Preview</title>
+  <style>
+    :root {
+      --bg: #11161d;
+      --panel: #1b2530;
+      --panel-border: #2a394a;
+      --text: #e9eef5;
+      --muted: #9fb0c2;
+      --idle-hand: #ffffff;
+      --listen-tint: #ffffff;
+      --respond-tint: #0000ff;
+      --error-tint: #ffffff;
+      --screen-bg: #000000;
+      --screen-w: 320px;
+      --screen-h: 240px;
+      --clock-size: 200px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DejaVu Sans", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, #23364a 0%, transparent 40%),
+        linear-gradient(180deg, #101720 0%, var(--bg) 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      display: grid;
+      grid-template-columns: minmax(360px, 420px) minmax(280px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .screen-shell,
+    .controls {
+      background: color-mix(in srgb, var(--panel) 92%, black);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .screen-shell {
+      padding: 20px;
+    }
+
+    .screen-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .screen {
+      position: relative;
+      width: var(--screen-w);
+      height: var(--screen-h);
+      background: var(--screen-bg);
+      border-radius: 18px;
+      overflow: hidden;
+      margin: 0 auto;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 0 40px rgba(255, 255, 255, 0.03);
+    }
+
+    .visual-stage {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .clock,
+    .pulse {
+      position: relative;
+      width: var(--clock-size);
+      height: var(--clock-size);
+      display: grid;
+      place-items: center;
+    }
+
+    .clock[hidden],
+    .pulse[hidden] {
+      display: none;
+    }
+
+    .face,
+    .pulse-core {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .hand {
+      position: absolute;
+      left: 50%;
+      bottom: 50%;
+      transform-origin: 50% 100%;
+      border-radius: 999px;
+      background: var(--idle-hand);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.18);
+    }
+
+    .hand.hour {
+      width: 10px;
+      height: 44px;
+      margin-left: -5px;
+    }
+
+    .hand.minute {
+      width: 8px;
+      height: 66px;
+      margin-left: -4px;
+    }
+
+    .hand.second {
+      width: 4px;
+      height: 78px;
+      margin-left: -2px;
+    }
+
+    .pin {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #000;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+    }
+
+    .pulse-core {
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.08));
+      animation: pulse 1.15s ease-in-out infinite;
+    }
+
+    .pulse.listen .pulse-core {
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.08));
+    }
+
+    .pulse.respond .pulse-core {
+      filter:
+        drop-shadow(0 0 18px color-mix(in srgb, var(--respond-tint) 65%, transparent))
+        hue-rotate(210deg)
+        saturate(1.15);
+    }
+
+    .pulse.error .pulse-core {
+      filter:
+        brightness(1.9)
+        contrast(1.1)
+        saturate(0.1)
+        drop-shadow(0 0 18px rgba(255, 255, 255, 0.38));
+    }
+
+    .state-badge {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      padding: 22px;
+    }
+
+    .controls h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .controls p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .group {
+      margin-top: 18px;
+    }
+
+    .group-title {
+      margin-bottom: 10px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid #3a4b5f;
+      background: #223140;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+
+    button:hover {
+      background: #2c3f52;
+      transform: translateY(-1px);
+    }
+
+    button.active {
+      background: #3d6588;
+      border-color: #6292bc;
+    }
+
+    .slider-row {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .note {
+      margin-top: 18px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: "DejaVu Sans Mono", monospace;
+      font-size: 0.95em;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.92); }
+      50% { transform: scale(1.10); }
+      100% { transform: scale(0.92); }
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="screen-shell">
+      <div class="screen-title">
+        <span>BOX-3 Screen Preview</span>
+        <span>320x240</span>
+      </div>
+      <div class="screen">
+        <div class="state-badge" id="state-badge">Idle</div>
+        <div class="visual-stage">
+          <div class="clock" id="clock">
+            <img class="face" src="../src/esphome/assets/voice_pulse.png" alt="Clock face" />
+            <div class="hand hour" id="hour-hand"></div>
+            <div class="hand minute" id="minute-hand"></div>
+            <div class="hand second" id="second-hand"></div>
+            <div class="pin"></div>
+          </div>
+          <div class="pulse listen" id="pulse" hidden>
+            <img class="pulse-core" src="../src/esphome/assets/voice_pulse.png" alt="Pulse visual" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <h1>Voice UI Desktop Preview</h1>
+      <p>
+        This local preview mimics the ESPHome screen behavior: idle shows a clock,
+        and listening/responding/error switch to the animated center pulse.
+      </p>
+
+      <div class="group">
+        <div class="group-title">State</div>
+        <div class="button-row" id="state-buttons">
+          <button data-state="idle" class="active">Idle</button>
+          <button data-state="listening">Listening</button>
+          <button data-state="responding">Responding</button>
+          <button data-state="error">Error</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Clock Hands</div>
+        <div class="slider-row">
+          <label>
+            Hour hand thickness
+            <input id="hour-width" type="range" min="4" max="20" value="10" />
+          </label>
+          <label>
+            Minute hand thickness
+            <input id="minute-width" type="range" min="4" max="20" value="8" />
+          </label>
+          <label>
+            Second hand thickness
+            <input id="second-width" type="range" min="2" max="12" value="4" />
+          </label>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Pulse Speed</div>
+        <div class="slider-row">
+          <label>
+            Animation duration
+            <input id="pulse-speed" type="range" min="700" max="1800" value="1150" step="50" />
+          </label>
+        </div>
+      </div>
+
+      <p class="note">
+        Asset source: <code>src/esphome/assets/voice_pulse.png</code>
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const clock = document.getElementById("clock");
+    const pulse = document.getElementById("pulse");
+    const stateBadge = document.getElementById("state-badge");
+    const stateButtons = [...document.querySelectorAll("#state-buttons button")];
+    const hourHand = document.getElementById("hour-hand");
+    const minuteHand = document.getElementById("minute-hand");
+    const secondHand = document.getElementById("second-hand");
+
+    const states = {
+      idle: { badge: "Idle", pulseClass: "" },
+      listening: { badge: "Listening", pulseClass: "listen" },
+      responding: { badge: "Responding", pulseClass: "respond" },
+      error: { badge: "Error", pulseClass: "error" },
+    };
+
+    function setState(nextState) {
+      const state = states[nextState];
+      if (!state) return;
+
+      const active = nextState !== "idle";
+      clock.hidden = active;
+      pulse.hidden = !active;
+      pulse.className = `pulse ${state.pulseClass}`.trim();
+      stateBadge.textContent = state.badge;
+
+      stateButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.state === nextState);
+      });
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const second = now.getSeconds();
+      const minute = now.getMinutes() + second / 60;
+      const hour = (now.getHours() % 12) + minute / 60;
+
+      hourHand.style.transform = `rotate(${hour * 30}deg)`;
+      minuteHand.style.transform = `rotate(${minute * 6}deg)`;
+      secondHand.style.transform = `rotate(${second * 6}deg)`;
+    }
+
+    function setHandWidth(el, widthPx) {
+      el.style.width = `${widthPx}px`;
+      el.style.marginLeft = `${-widthPx / 2}px`;
+    }
+
+    document.getElementById("hour-width").addEventListener("input", (event) => {
+      setHandWidth(hourHand, Number(event.target.value));
+    });
+
+    document.getElementById("minute-width").addEventListener("input", (event) => {
+      setHandWidth(minuteHand, Number(event.target.value));
+    });
+
+    document.getElementById("second-width").addEventListener("input", (event) => {
+      setHandWidth(secondHand, Number(event.target.value));
+    });
+
+    document.getElementById("pulse-speed").addEventListener("input", (event) => {
+      document.documentElement.style.setProperty("--pulse-speed-ms", `${event.target.value}ms`);
+      document.querySelector(".pulse-core").style.animationDuration = `${event.target.value}ms`;
+    });
+
+    stateButtons.forEach((button) => {
+      button.addEventListener("click", () => setState(button.dataset.state));
+    });
+
+    updateClock();
+    setInterval(updateClock, 1000);
+    setState("idle");
+  </script>
+</body>
+</html>
