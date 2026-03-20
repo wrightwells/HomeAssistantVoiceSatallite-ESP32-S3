@@ -40,6 +40,8 @@ wifi_ssid: "Private"
 wifi_password: "REPLACE_ME_WIFI_PASSWORD"
 api_encryption_key: "REPLACE_ME_BASE64_32_BYTE_KEY"
 ota_password: "REPLACE_ME_OTA_PASSWORD"
+device_name: "esp32-s3-box-3-kitchen"
+device_friendly_name: "Kitchen Voice Satellite"
 ```
 
 What each value is for:
@@ -48,11 +50,71 @@ What each value is for:
 - `wifi_password`: the password for that Wi-Fi network
 - `api_encryption_key`: the ESPHome native API encryption key used between the device and Home Assistant
 - `ota_password`: the password used when uploading new firmware over ESPHome OTA
+- `device_name`: optional per-device ESPHome node name if you want a fixed custom identity
+- `device_friendly_name`: optional Home Assistant display name paired with `device_name`
 
 Notes:
 
 - `src/esphome/secrets.yaml` is ignored by git and should contain your real values
 - `src/esphome/secrets.example.yaml` is the safe template committed to the repo
+
+## Device Naming Approaches
+
+This project supports two practical ways to name devices on the same network.
+
+### Approach 1: Automatic unique fallback
+
+The default firmware enables:
+
+```yaml
+esphome:
+  name_add_mac_suffix: true
+```
+
+That means the compiled base name:
+
+```yaml
+name: esp32-s3-box-3-voice
+```
+
+becomes a stable unique device name such as:
+
+```text
+esp32-s3-box-3-voice-a1b2c3
+```
+
+This is the safest fallback for multiple devices because it remains stable for
+the same hardware across power cycles.
+
+### Approach 2: Fixed per-device names from `secrets.yaml`
+
+If you want a custom fixed name per unit, set these values in:
+
+- `src/esphome/secrets.yaml`
+
+Example:
+
+```yaml
+device_name: "esp32-s3-box-3-kitchen"
+device_friendly_name: "Kitchen Voice Satellite"
+```
+
+Then update `src/esphome/esp32-s3-box-3-voice.yaml` substitutions from:
+
+```yaml
+name: esp32-s3-box-3-voice
+friendly_name: ESP32-S3-BOX-3 Voice
+```
+
+to:
+
+```yaml
+name: !secret device_name
+friendly_name: !secret device_friendly_name
+```
+
+Use this approach when you want predictable names like `kitchen`, `office`, or
+`bedroom` instead of MAC-based suffixes.
 
 ## Display Asset And Visual States
 

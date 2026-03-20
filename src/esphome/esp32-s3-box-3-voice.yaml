@@ -12,6 +12,10 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
+  # Fallback for multi-device deployments when you have not customized the
+  # device name yet. This keeps the hostname stable and unique per hardware
+  # without requiring a rebuild for every power cycle.
+  name_add_mac_suffix: true
   comment: "Lean Home Assistant Assist satellite for ESP32-S3-BOX-3"
   on_boot:
     priority: -10
