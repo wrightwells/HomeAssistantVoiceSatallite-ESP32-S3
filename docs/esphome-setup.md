@@ -9,8 +9,10 @@ the Home Assistant side.
 ## Local files
 
 - firmware: `src/esphome/esp32-s3-box-3-voice.yaml`
+- face theme config: `src/esphome/face-theme-params.yaml`
 - local secrets: `src/esphome/secrets.yaml`
-- pulse asset: `src/esphome/assets/voice_pulse.png`
+- HAL asset: `src/esphome/assets/HAL_200x200.png`
+- Alien asset: `src/esphome/assets/ALIEN_200x200.png`
 
 ## Home Assistant expectations
 

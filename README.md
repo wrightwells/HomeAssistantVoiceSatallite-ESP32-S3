@@ -9,6 +9,7 @@ Assistant Assist voice satellite.
 - local secrets template: `src/esphome/secrets.example.yaml`
 - display asset folder: `src/esphome/assets/`
 - setup notes: `docs/esphome-setup.md`
+- future hardware-testing handoff prompt: `TESTING_SESSION_README.md`
 
 ## Requirements
 
@@ -21,7 +22,8 @@ Assistant Assist voice satellite.
 
 1. Copy `src/esphome/secrets.example.yaml` to `src/esphome/secrets.yaml`.
 2. Replace the placeholder Wi-Fi, API, and OTA values in `src/esphome/secrets.yaml`.
-3. Place the pulse image at `src/esphome/assets/voice_pulse.png`.
+3. Select the active face in `src/esphome/face-theme-params.yaml`.
+4. Confirm the matching asset exists in `src/esphome/assets/`.
 
 ## Secrets File Values
 
@@ -118,9 +120,11 @@ Use this approach when you want predictable names like `kitchen`, `office`, or
 
 ## Display Asset And Visual States
 
-The firmware uses this image file for the on-screen visual:
+The firmware uses a compile-time-selected face image for the on-screen visual:
 
-- `src/esphome/assets/voice_pulse.png`
+- HAL face asset: `src/esphome/assets/HAL_200x200.png`
+- Alien face asset: `src/esphome/assets/ALIEN_200x200.png`
+- theme selector: `src/esphome/face-theme-params.yaml`
 
 Current expected asset format:
 
@@ -130,19 +134,35 @@ Current expected asset format:
 
 How it is used:
 
-- idle state: the image is used as the clock background
+- idle state: the selected image is used as the clock background
 - idle green mode: Home Assistant can optionally tint the idle clock face green
-- listening state: the same image is shown in the center with pulse animation and no tint
-- responding state: the same image is shown in the center with pulse animation and a blue tint
-- error state: the same image is shown in the center with pulse animation and a white tint
+- listening state: the selected image is shown in the center with pulse animation and no tint
+- responding state: the selected image is shown in the center with pulse animation and a blue tint
+- error state: the selected image is shown in the center with pulse animation and a white tint
+
+Build-time controls:
+
+- `src/esphome/face-theme-params.yaml`
+  - `face_frame_interval_ms`: intended array animation timing value
+  - `idle_use_clock`: enables or disables the idle clock overlay
+
+Alien theme note:
+
+- when `face_theme` is set to `ALIEN`, the listening visual is tinted green
+
+Future frame-array placeholders are scaffolded under:
+
+- `src/esphome/assets/face-arrays/HAL/`
+- `src/esphome/assets/face-arrays/ALIEN/`
 
 Related files:
 
 - firmware behavior: `src/esphome/esp32-s3-box-3-voice.yaml`
-- desktop preview: `preview/index.html`
+- HAL preview: `preview/index.html`
+- theme-array preview: `preview-faces/index.html`
 
-If you replace `src/esphome/assets/voice_pulse.png`, both the firmware display
-and the desktop preview will use the updated asset.
+If you replace the active asset selected in `src/esphome/face-theme-params.yaml`,
+both the firmware display and the corresponding preview will use the updated face.
 
 ## Home Assistant Controlled Clock Tint
 
@@ -279,7 +299,7 @@ output from that directory.
 ## Recommended Workflow
 
 1. Edit `src/esphome/secrets.yaml`.
-2. Confirm `src/esphome/assets/voice_pulse.png` is present.
+2. Confirm the selected face asset is present in `src/esphome/assets/`.
 3. Compile the firmware.
 4. Flash once over USB.
 5. Perform future updates over standard ESPHome OTA.

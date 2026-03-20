@@ -1,0 +1,27 @@
+substitutions:
+  # Face, clock, and preview-related build parameters.
+  #
+  # Compile-time face theme switch.
+  # Keep `face_theme` and `active_face_asset` aligned.
+  #
+  # HAL:
+  #   face_theme: "HAL"
+  #   active_face_asset: "assets/HAL_200x200.png"
+  #
+  # Alien:
+  #   face_theme: "ALIEN"
+  #   active_face_asset: "assets/ALIEN_200x200.png"
+  face_theme: "HAL"
+  active_face_asset: "assets/HAL_200x200.png"
+
+  # Frame-array timing in milliseconds.
+  # Lower values animate faster; higher values animate slower.
+  # The browser preview uses this value directly as its frame interval.
+  face_frame_interval_ms: "320"
+
+  # On-device LVGL animimg duration for a complete 6-frame loop.
+  # Keep this aligned with `face_frame_interval_ms` for the closest match.
+  face_anim_duration: "1920ms"
+
+  # Controls whether the idle face should show a clock overlay.
+  idle_use_clock: "true"

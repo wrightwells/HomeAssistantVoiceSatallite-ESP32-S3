@@ -1,15 +1,20 @@
 # Display Asset Notes
 
-Place the listening/responding pulse image here as:
+Place the face assets here as:
 
-- `voice_pulse.png`
+- `HAL_200x200.png`
+- `ALIEN_200x200.png`
 
 Recommended asset format:
 
 - transparent PNG
-- square or near-square image
-- roughly `160x160` to `220x220`
+- `200x200`
 - centered subject with transparent padding if needed
+
+Theme selection:
+
+- set the active theme in `../face-theme-params.yaml`
+- future frame arrays belong under `face-arrays/`
 
 Why not full-screen?
 

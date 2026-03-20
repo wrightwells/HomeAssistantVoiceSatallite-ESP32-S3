@@ -6,6 +6,7 @@ ESP32-S3-BOX-3 Home Assistant voice satellite.
 ## Files
 
 - `esp32-s3-box-3-voice.yaml`: main firmware configuration
+- `face-theme-params.yaml`: face, clock, and animation build parameters
 - `secrets.example.yaml`: template for local secrets
 - `assets/`: display image assets referenced by the YAML
 
@@ -13,8 +14,10 @@ ESP32-S3-BOX-3 Home Assistant voice satellite.
 
 1. Copy `secrets.example.yaml` to `secrets.yaml`.
 2. Replace the placeholder values in `secrets.yaml`.
-3. Put your pulse image at `assets/voice_pulse.png`.
-4. Compile/upload with ESPHome from this directory.
+3. Select the active face in `face-theme-params.yaml`.
+4. Tune clock/animation behavior in `face-theme-params.yaml` if needed.
+5. Confirm the matching asset exists in `assets/`.
+6. Compile/upload with ESPHome from this directory.
 
 ## Wake word modes
 

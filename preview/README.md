@@ -4,7 +4,7 @@ This folder contains a lightweight local preview of the ESP32-S3-BOX-3 voice UI.
 
 It simulates:
 
-- idle clock mode using `src/esphome/assets/voice_pulse.png`
+- idle clock mode using `src/esphome/assets/HAL_200x200.png`
 - listening pulse state
 - responding pulse state
 - error pulse state
@@ -47,7 +47,7 @@ Ctrl+C
 The preview uses this file directly:
 
 ```text
-src/esphome/assets/voice_pulse.png
+src/esphome/assets/HAL_200x200.png
 ```
 
 If you replace that asset, refresh the browser to see the updated image.

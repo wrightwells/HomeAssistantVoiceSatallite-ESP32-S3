@@ -294,14 +294,14 @@
         <div class="state-badge" id="state-badge">Idle</div>
         <div class="visual-stage">
           <div class="clock" id="clock">
-            <img class="face" src="../src/esphome/assets/voice_pulse.png" alt="Clock face" />
+            <img class="face" src="../src/esphome/assets/HAL_200x200.png" alt="Clock face" />
             <div class="hand hour" id="hour-hand"></div>
             <div class="hand minute" id="minute-hand"></div>
             <div class="hand second" id="second-hand"></div>
             <div class="pin"></div>
           </div>
           <div class="pulse listen" id="pulse" hidden>
-            <img class="pulse-core" src="../src/esphome/assets/voice_pulse.png" alt="Pulse visual" />
+            <img class="pulse-core" src="../src/esphome/assets/HAL_200x200.png" alt="Pulse visual" />
           </div>
         </div>
       </div>
@@ -321,6 +321,13 @@
           <button data-state="listening">Listening</button>
           <button data-state="responding">Responding</button>
           <button data-state="error">Error</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Clock</div>
+        <div class="button-row">
+          <button id="clock-toggle" class="active">Clock On</button>
         </div>
       </div>
 
@@ -353,7 +360,7 @@
       </div>
 
       <p class="note">
-        Asset source: <code>src/esphome/assets/voice_pulse.png</code>
+        Asset source: <code>src/esphome/assets/HAL_200x200.png</code>
       </p>
     </section>
   </main>
@@ -366,6 +373,9 @@
     const hourHand = document.getElementById("hour-hand");
     const minuteHand = document.getElementById("minute-hand");
     const secondHand = document.getElementById("second-hand");
+    const clockToggle = document.getElementById("clock-toggle");
+    const clockPin = document.querySelector(".pin");
+    let clockEnabled = true;
 
     const states = {
       idle: { badge: "Idle", pulseClass: "" },
@@ -383,10 +393,17 @@
       pulse.hidden = !active;
       pulse.className = `pulse ${state.pulseClass}`.trim();
       stateBadge.textContent = state.badge;
+      const showClock = clockEnabled && !active;
+      [hourHand, minuteHand, secondHand].forEach((hand) => {
+        hand.style.display = showClock ? "block" : "none";
+      });
+      clockPin.style.display = showClock ? "block" : "none";
 
       stateButtons.forEach((button) => {
         button.classList.toggle("active", button.dataset.state === nextState);
       });
+      clockToggle.classList.toggle("active", clockEnabled);
+      clockToggle.textContent = clockEnabled ? "Clock On" : "Clock Off";
     }
 
     function updateClock() {
@@ -424,6 +441,12 @@
 
     stateButtons.forEach((button) => {
       button.addEventListener("click", () => setState(button.dataset.state));
+    });
+
+    clockToggle.addEventListener("click", () => {
+      clockEnabled = !clockEnabled;
+      const activeState = stateButtons.find((button) => button.classList.contains("active"))?.dataset.state || "idle";
+      setState(activeState);
     });
 
     updateClock();
