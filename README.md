@@ -23,6 +23,37 @@ Assistant Assist voice satellite.
 2. Replace the placeholder Wi-Fi, API, and OTA values in `src/esphome/secrets.yaml`.
 3. Place the pulse image at `src/esphome/assets/voice_pulse.png`.
 
+## Secrets File Values
+
+These values are stored in:
+
+- `src/esphome/secrets.yaml`
+
+They are initially shown in:
+
+- `src/esphome/secrets.example.yaml`
+
+The expected keys are:
+
+```yaml
+wifi_ssid: "Private"
+wifi_password: "REPLACE_ME_WIFI_PASSWORD"
+api_encryption_key: "REPLACE_ME_BASE64_32_BYTE_KEY"
+ota_password: "REPLACE_ME_OTA_PASSWORD"
+```
+
+What each value is for:
+
+- `wifi_ssid`: the Wi-Fi network name the ESP32-S3-BOX-3 should join
+- `wifi_password`: the password for that Wi-Fi network
+- `api_encryption_key`: the ESPHome native API encryption key used between the device and Home Assistant
+- `ota_password`: the password used when uploading new firmware over ESPHome OTA
+
+Notes:
+
+- `src/esphome/secrets.yaml` is ignored by git and should contain your real values
+- `src/esphome/secrets.example.yaml` is the safe template committed to the repo
+
 ## Compile The Firmware
 
 From the repository root:

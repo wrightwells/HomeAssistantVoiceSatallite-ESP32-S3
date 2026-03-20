@@ -389,8 +389,8 @@ script:
       - lvgl.widget.show: pulse_image
       - lvgl.image.update:
           id: pulse_image
-          image_recolor: 0x41C7F4
-          image_recolor_opa: 35%
+          image_recolor: 0xFFFFFF
+          image_recolor_opa: 0%
 
   - id: ui_responding
     mode: restart
@@ -403,7 +403,7 @@ script:
       - lvgl.widget.show: pulse_image
       - lvgl.image.update:
           id: pulse_image
-          image_recolor: 0xF4B942
+          image_recolor: 0x0000FF
           image_recolor_opa: 35%
 
   - id: ui_error
@@ -417,8 +417,8 @@ script:
       - lvgl.widget.show: pulse_image
       - lvgl.image.update:
           id: pulse_image
-          image_recolor: 0xD64545
-          image_recolor_opa: 40%
+          image_recolor: 0xFFFFFF
+          image_recolor_opa: 100%
 
   - id: arm_wake_word
     mode: restart
