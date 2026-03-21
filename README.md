@@ -9,6 +9,7 @@ Assistant Assist voice satellite.
 - local secrets template: `src/esphome/secrets.example.yaml`
 - display asset folder: `src/esphome/assets/`
 - setup notes: `docs/esphome-setup.md`
+- Ollama instructions prompt: `docs/ollama-instructions.md`
 - future hardware-testing handoff prompt: `TESTING_SESSION_README.md`
 
 ## Requirements

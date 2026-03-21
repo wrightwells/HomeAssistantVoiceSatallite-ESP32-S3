@@ -13,12 +13,14 @@ the Home Assistant side.
 - local secrets: `src/esphome/secrets.yaml`
 - HAL asset: `src/esphome/assets/HAL_200x200.png`
 - Alien asset: `src/esphome/assets/ALIEN_200x200.png`
+- Ollama instructions prompt: `docs/ollama-instructions.md`
 
 ## Home Assistant expectations
 
 - native ESPHome API connection to Home Assistant
 - Assist pipeline configured in Home Assistant
 - preferred local services hosted at `10.10.20.210`
+- Ollama instructions field populated from `docs/ollama-instructions.md`
 
 ## Verify on first boot
 
