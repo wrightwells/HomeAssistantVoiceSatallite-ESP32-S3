@@ -342,6 +342,7 @@ display:
   - platform: ili9xxx
     id: box_display
     model: S3BOX
+    invert_colors: false
     spi_id: lcd_spi
     cs_pin: GPIO5
     dc_pin: GPIO4
@@ -372,9 +373,9 @@ globals:
     restore_value: no
     initial_value: '0'
   - id: pulse_zoom_native
-    type: int
+    type: float
     restore_value: no
-    initial_value: '256'
+    initial_value: '1.0f'
   - id: pulse_direction
     type: int
     restore_value: no
@@ -455,7 +456,7 @@ lvgl:
               align: CENTER
               src: active_face_image
               hidden: true
-              zoom: 256
+              zoom: 1.0
               antialias: false
               mode: VIRTUAL
           - animimg:
@@ -629,7 +630,7 @@ script:
     then:
       - lambda: |-
           id(ui_phase) = 0;
-          id(pulse_zoom_native) = 256;
+          id(pulse_zoom_native) = 1.0f;
           id(pulse_direction) = 1;
       - if:
           condition:
@@ -668,7 +669,7 @@ script:
     then:
       - lambda: |-
           id(ui_phase) = 1;
-          id(pulse_zoom_native) = 256;
+          id(pulse_zoom_native) = 1.0f;
           id(pulse_direction) = 1;
       - if:
           condition:
@@ -689,7 +690,7 @@ script:
     then:
       - lambda: |-
           id(ui_phase) = 2;
-          id(pulse_zoom_native) = 256;
+          id(pulse_zoom_native) = 1.0f;
           id(pulse_direction) = 1;
       - if:
           condition:
@@ -710,7 +711,7 @@ script:
     then:
       - lambda: |-
           id(ui_phase) = 3;
-          id(pulse_zoom_native) = 256;
+          id(pulse_zoom_native) = 1.0f;
           id(pulse_direction) = 1;
       - if:
           condition:
@@ -746,9 +747,9 @@ interval:
             lambda: "return id(ui_phase) == 1 || id(ui_phase) == 2;"
           then:
             - lambda: |-
-                const int min_zoom = (id(ui_phase) == 1) ? 236 : 246;
-                const int max_zoom = (id(ui_phase) == 1) ? 300 : 286;
-                id(pulse_zoom_native) += id(pulse_direction) * 6;
+                const float min_zoom = (id(ui_phase) == 1) ? 0.921875f : 0.9609375f;
+                const float max_zoom = (id(ui_phase) == 1) ? 1.171875f : 1.1171875f;
+                id(pulse_zoom_native) += id(pulse_direction) * 0.0234375f;
                 if (id(pulse_zoom_native) >= max_zoom) {
                   id(pulse_zoom_native) = max_zoom;
                   id(pulse_direction) = -1;
@@ -762,14 +763,14 @@ interval:
           else:
             - if:
                 condition:
-                  lambda: "return id(pulse_zoom_native) != 256;"
+                  lambda: "return id(pulse_zoom_native) != 1.0f;"
                 then:
                   - lambda: |-
-                      id(pulse_zoom_native) = 256;
+                      id(pulse_zoom_native) = 1.0f;
                       id(pulse_direction) = 1;
                   - lvgl.image.update:
                       id: pulse_image
-                      zoom: 256
+                      zoom: 1.0
 
   - interval: 1s
     then:
@@ -786,11 +787,11 @@ micro_wake_word:
   microphone: box_mic
   stop_after_detection: true
   vad:
-    model: github://esphome/micro-wake-word-models/models/v2/vad.json
+    model: vad
     probability_cutoff: 0.80
     sliding_window_size: 5
   models:
-    - model: github://esphome/micro-wake-word-models/models/v2/okay_nabu.json
+    - model: okay_nabu
       probability_cutoff: 0.97
       sliding_window_size: 4
   on_wake_word_detected:
